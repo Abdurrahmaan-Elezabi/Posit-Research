@@ -8,7 +8,7 @@
 #include "PositBase.hh"
 #include "Posit32.hh"
 #include "Posit32nc.hh"
-/* 
+
 int main(int argc, char*argv[]){
     Posit32 p(2,6); // time to start doing experiments with smaller numbers
     mpf_class a,b,c;
@@ -20,10 +20,10 @@ int main(int argc, char*argv[]){
     if(p.getSignBit()==1) printf("Postive has negative sign bit incorrect\n");
     else printf("correct\n");
     
-    exit(0);
+    //exit(0);
     
     {
-        unsigned int i,tc;
+        int32_t i,tc;
         size_t maxbits = 6;
         for(i=0;i<maxbits;i++){
             printf("Number:");
@@ -128,6 +128,6 @@ int main(int argc, char*argv[]){
         don't forget to do descriptions of PathForward work
      */
     
-//    return 1;
-//}
+    return 1;
+}
 
