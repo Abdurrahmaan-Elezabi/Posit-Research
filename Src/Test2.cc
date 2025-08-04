@@ -10,7 +10,7 @@
 #include "half.hpp"
 #include "bfloat16.hh"
 #include "gmp_helpers.hh"
-#include "SoftPosit/source/include/softposit_cpp.h"
+// #include "SoftPosit/source/include/softposit_cpp.h"
 #include "MatrixAlgebra/helpers.hh"
 
 using namespace std;

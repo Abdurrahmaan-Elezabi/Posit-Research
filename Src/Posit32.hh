@@ -58,11 +58,11 @@ public:
         else return p; // return normal polarity (no inversion)
     }
     virtual inline void setToInfinity() {
-        register uint32_t mask=1L<<(size-1);
+        uint32_t mask=1L<<(size-1);
         this->d=mask;
     }
     virtual inline bool isInfinity() const {
-        register uint32_t mask=1L<<(size-1);
+        uint32_t mask=1L<<(size-1);
         if(this->d == mask) { return 1;}
         else return 0;
     }

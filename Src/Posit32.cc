@@ -168,7 +168,7 @@ Posit32::Posit32(string s):PositBase(ES, SIZE) {
 
 // Retrieve the MSB that determines the sign fo the POSIT
 bool Posit32::getSignBit() const {
-    register uint32_t msb=1L<<(size-1);
+    uint32_t msb=1L<<(size-1);
     return (this->d & msb)?1:0;
 }
 
@@ -177,8 +177,8 @@ unsigned int Posit32::getRegimeNbits() const  {
     int n, nbits;
     uint32_t mask; // initialize the mask to point to regime start
     uint32_t v;
-    register bool start_bit = regimePolarity();
-    register uint32_t msb=1L<<(this->size-1);
+    bool start_bit = regimePolarity();
+    uint32_t msb=1L<<(this->size-1);
     if(this->getSignBit()) v=twosComp(this->d,this->size-1);  // invert two's comp if negative
     else v=this->d; // else don't invert (positive number is not twoscomp
     // printf("GetRegimeBits startbit polarity=%u, msb[%0X]\n",start_bit,msb);
@@ -321,8 +321,8 @@ unsigned int Posit32::getFractionBits() const {
 }
 
 unsigned int Posit32::getMaxFractionBits() const { // what is the max fraction?
-        register int nbits=getFractionNbits();
-        register unsigned int val=(1<<(nbits+1))-1;
+        int nbits=getFractionNbits();
+        unsigned int val=(1<<(nbits+1))-1;
         // debug("getMaxFractrionBits",val);
         if(nbits==0) return 0;
         else return val;
@@ -501,9 +501,9 @@ void Posit32::setFast(mpf_class v) {
     }
     
     //now we must round.
-    lsb    = (posit << this->size-1) >> 63; //least significant bit. 
-    guard  = (posit << this->size) >> 63; //one bit off the edge.
-    sticky = sticky || ((posit << this->size+1) != 0); //is there something after guard?
+    lsb    = (posit << (this->size-1)) >> 63; //least significant bit.
+    guard  = (posit << (this->size)) >> 63; //one bit off the edge.
+    sticky = sticky || ((posit << (this->size+1)) != 0); //is there something after guard?
     //if guard = 1, then its at least at the half way point, either sticky will push it over the edge. or
     //if lsb is 1 then that means we should tie to even by rounding the odd lsb. 
     if (guard && (sticky || lsb)) posit += 1l << (64-this->size);
