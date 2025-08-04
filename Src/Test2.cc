@@ -7,7 +7,7 @@
 #include <set>
 #include <bitset>
 #include "Posit32.hh"
-#include "half.hpp"
+#include "half.hh"
 #include "bfloat16.hh"
 #include "gmp_helpers.hh"
 // #include "SoftPosit/source/include/softposit_cpp.h"

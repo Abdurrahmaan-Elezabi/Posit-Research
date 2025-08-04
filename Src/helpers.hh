@@ -7,7 +7,7 @@
 #include <gmpxx.h>
 #include "mmio.hh"
 #include "Posit32.hh"
-#include "half.hpp"
+#include "half.hh"
 #include "bfloat16.hh"
 
 using namespace std;

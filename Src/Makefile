@@ -9,8 +9,8 @@ OBJECTS = Posit32.o PositBase.o bfloat16.o gmp_helpers.o
 
 all: libPosit.a
 
-libPosit.a: PositBase.o Posit32.o PositBase.hh Posit32.hh gmp_helpers.hh helpers.hh
-	$(ARCHIVE) libPosit.a PositBase.o Posit32.o
+libPosit.a: PositBase.o Posit32.o Quire.o bfloat16.o FFT.o gmp_helpers.o helpers.o
+	$(ARCHIVE) libPosit.a PositBase.o Posit32.o helpers.o gmp_helpers.o FFT.o bfloat16.o Quire.o
 
 Test.o: Test.cc PositBase.hh Posit32.hh gmp_helpers.hh
 	$(CXX) $(CFLAGS) -c Test.cc
@@ -31,7 +31,7 @@ PositBase.o: PositBase.cc PositBase.hh gmp_helpers.hh
 Posit32.o: Posit32.cc Posit32.hh PositBase.hh
 	$(CXX) $(CFLAGS) -c Posit32.cc
 	
-helpers.o: helpers.cc helpers.hh mmio.hh Posit32.hh half.hpp bfloat16.hh
+helpers.o: helpers.cc helpers.hh mmio.hh Posit32.hh half.hh bfloat16.hh
 	$(CXX) $(CFLAGS) -c helpers.cc
 
 HuffmanCoding: HuffmanCoding.cc
