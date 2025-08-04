@@ -29,7 +29,7 @@ public:
     // Posit32nc(const Posit32nc &other);
     // Posit32(size_t _es):PositBase(sizeof(int32_t)*8,_es),d(0){}
     virtual bool getSignBit(){
-        register uint32_t msb=1L<<(size-1);
+        uint32_t msb=1L<<(size-1);
         return (this->d & msb)?1:0;
     }
     inline virtual void set(int32_t v) { d=v; }
@@ -40,11 +40,11 @@ public:
         return polarity(mask & this->d);
     }
     virtual inline void setToInfinity(){
-        register uint32_t mask=1L<<(size-1);
+        uint32_t mask=1L<<(size-1);
         this->d=mask;
     }
     virtual inline bool isInfinity(){
-        register uint32_t mask=1L<<(size-1);
+        uint32_t mask=1L<<(size-1);
         if(this->d == mask) { return 1;}
         else return 0;
     }

@@ -27,9 +27,12 @@ Test2.o: Test2.cc
 PositBase.o: PositBase.cc PositBase.hh gmp_helpers.hh
 	$(CXX) $(CFLAGS) -c PositBase.cc
 
-# note that Posit32nc is still present, but not needed
 Posit32.o: Posit32.cc Posit32.hh PositBase.hh
 	$(CXX) $(CFLAGS) -c Posit32.cc
+
+# note that Posit32nc is still present, but not needed
+Posit32nc.o: Posit32nc.cc Posit32nc.hh PositBase.hh
+	$(CXX) $(CFLAGS) -c Posit32nc.cc
 	
 helpers.o: helpers.cc helpers.hh mmio.hh Posit32.hh half.hh bfloat16.hh
 	$(CXX) $(CFLAGS) -c helpers.cc

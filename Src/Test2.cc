@@ -10,8 +10,7 @@
 #include "half.hh"
 #include "bfloat16.hh"
 #include "gmp_helpers.hh"
-// #include "SoftPosit/source/include/softposit_cpp.h"
-#include "MatrixAlgebra/helpers.hh"
+#include "helpers.hh"
 
 using namespace std;
 using half_float::half;
@@ -401,7 +400,7 @@ void testArithmetic() {
     uint stride=8;
 
     Posit32gmp a, b, ab; 
-    posit16    as, bs, abs;
+    posit16    as, bs, abs; // JS 2025:  The problem is that this is a dependency on the external SoftPosit library.  Need to create our own posit16.
     //mpf_class  amean, gmean;
 
     for (uint64_t i=0;i<max;i+=stride) {

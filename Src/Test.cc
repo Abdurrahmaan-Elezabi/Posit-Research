@@ -7,7 +7,7 @@
 #include <iostream>
 #include "PositBase.hh"
 #include "Posit32.hh"
-#include "Posit32nc.hh"
+// #include "Posit32nc.hh"
 
 int main(int argc, char*argv[]){
     Posit32 p(2,6); // time to start doing experiments with smaller numbers
