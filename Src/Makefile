@@ -1,7 +1,7 @@
 CXX = c++
 PATHBASE = /opt/homebrew
 CFLAGS = -I$(PATHBASE)/include
-LINK = -v -L$(PATHBASE)/lib -L. -lgmpxx -lgmp -lm
+LINK = -v -L$(PATHBASE)/lib -L. -lgmpxx -lgmp -lboost_filesystem -lm
 ARCHIVE = /usr/bin/ar cr
 OBJECTS = Posit32.o PositBase.o bfloat16.o gmp_helpers.o
 
@@ -9,8 +9,8 @@ OBJECTS = Posit32.o PositBase.o bfloat16.o gmp_helpers.o
 
 all: Benchmarks
 
-libPosit.a: PositBase.o Posit32.o Quire.o bfloat16.o FFT.o gmp_helpers.o helpers.o
-	$(ARCHIVE) libPosit.a PositBase.o Posit32.o helpers.o gmp_helpers.o FFT.o bfloat16.o Quire.o
+libPosit.a: PositBase.o Posit32.o Quire.o bfloat16.o FFT.o gmp_helpers.o helpers.o mmio.o
+	$(ARCHIVE) libPosit.a PositBase.o Posit32.o helpers.o gmp_helpers.o FFT.o bfloat16.o Quire.o mmio.o
 
 Test.o: Test.cc PositBase.hh Posit32.hh gmp_helpers.hh
 	$(CXX) $(CFLAGS) -c Test.cc
@@ -50,7 +50,7 @@ FFT.o: FFT.cc FFT.hh mmio.hh helpers.hh bfloat16.hh Posit32.hh Matrix.hh
 	$(CXX) $(CFLAGS) -c FFT.cc
 
 Benchmarks: Benchmarks.o libPosit.a
-	$(CXX) $(CFLAGS) -o Benchmarks Benchmarks.cc -lPosit $(LINK)
+	$(CXX) $(CFLAGS) -o Benchmarks Benchmarks.o -lPosit $(LINK)
 
 Benchmarks.o: Benchmarks.cc Matrix.hh mmio.hh helpers.hh FFT.hh Quire.hh
 	$(CXX) $(CFLAGS) -c Benchmarks.cc
