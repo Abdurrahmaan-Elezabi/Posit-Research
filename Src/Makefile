@@ -1,7 +1,7 @@
 CXX = c++
 PATHBASE = /opt/homebrew
-CFLAGS = -I$(PATHBASE)/include
-LINK = -v -L$(PATHBASE)/lib -L. -lgmpxx -lgmp -lboost_filesystem -lm
+CFLAGS = -I$(PATHBASE)/include -I/usr/local/include
+LINK = -v -L$(PATHBASE)/lib -L/usr/local -L. -lgmpxx -lgmp -lboost_filesystem -lm
 ARCHIVE = /usr/bin/ar cr
 OBJECTS = Posit32.o PositBase.o bfloat16.o gmp_helpers.o
 
