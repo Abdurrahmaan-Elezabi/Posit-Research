@@ -350,7 +350,7 @@ int testRounding() {
 }
 
 
-/*
+/*  Cannot build because of posit16
 void testSin() {
     Posit32gmp p(string("0.00561523")), p2(string("3.8147e-06"));
     Posit32gmp r = p*p2;
@@ -393,7 +393,7 @@ void testSin() {
     cout << bits << " " << bits2 << endl;
 
     cout << gmean << endl;
-}*/
+} */
 
 
 void testArithmetic() {
