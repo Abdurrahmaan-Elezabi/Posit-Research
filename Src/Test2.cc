@@ -7,6 +7,7 @@
 #include <set>
 #include <bitset>
 #include "Posit32.hh"
+#include "PositBase.hh"
 #include "half.hh"
 #include "bfloat16.hh"
 #include "gmp_helpers.hh"
@@ -329,17 +330,17 @@ int testRounding() {
                 successesbfloat += 1; //Then we should have represented the value exactly. 
             }
 
-            /*cout << endl << "Posit: " << endl;
-            cout << "\t" << mp1 << "+" << mp2 << "=" << posit_result << " : " << "one less=" << mpf_lower_posit
-                << " one above=" << mpf_upper_posit << endl;
-            cout << "\t" << "Perfect result: " << p_result_precise << endl;
+            // out << endl << "Posit: " << endl;
+           // cout << "\t" << mp1 << "+" << mp2 << "=" << posit_result << " : " << "one less=" << //mpf_lower_posit
+         //       << " one above=" << mpf_upper_posit << endl;
+         //   cout << "\t" << "Perfect result: " << p_result_precise << endl;
 
-            cout << endl << "bfloat: " << endl;
-            cout << "\t" << mb1 << "+" << mb2 << "=" << bfloat_result << " : " << "one less=" << mpf_lower_bfloat16
-                << " one above=" << mpf_upper_bfloat16<< endl;
-            cout << "\t" << "Perfect result: " << b_result_precise << endl;*/
+       //     cout << endl << "bfloat: " << endl;
+        //    cout << "\t" << mb1 << "+" << mb2 << "=" << bfloat_result << " : " << "one less=" << //mpf_lower_bfloat16
+       //         << " one above=" << mpf_upper_bfloat16<< endl;
+       //     cout << "\t" << "Perfect result: " << b_result_precise << endl;
 
-        }
+      }
     }
     cout << "Posits had " << successesPosit << " successes." << endl;
     cout << "bfloats had " << successesbfloat << " successes." << endl;
@@ -348,7 +349,8 @@ int testRounding() {
     return 1;    
 }
 
-/*
+
+/*  Cannot build because of posit16
 void testSin() {
     Posit32gmp p(string("0.00561523")), p2(string("3.8147e-06"));
     Posit32gmp r = p*p2;
@@ -391,7 +393,7 @@ void testSin() {
     cout << bits << " " << bits2 << endl;
 
     cout << gmean << endl;
-}*/
+} */
 
 
 void testArithmetic() {
@@ -399,24 +401,28 @@ void testArithmetic() {
 
     uint stride=8;
 
-    Posit32gmp a, b, ab; 
-    posit16    as, bs, abs; // JS 2025:  The problem is that this is a dependency on the external SoftPosit library.  Need to create our own posit16.
+    Posit32gmp a, b, ab;
+    Posit32   as, bs, abs;
+    // posit16    as, bs, abs; // JS 2025:  The problem is that this is a dependency on the external SoftPosit library.  Need to create our own posit16.
     //mpf_class  amean, gmean;
 
     for (uint64_t i=0;i<max;i+=stride) {
         a.d = i;
-        as.value = a.d;
-        if (a.isInfinity() && as.isNaR()) continue;
+        // as.value = a.d;  // only for posit16 (external library)
+        as.d = a.d;
+       // if (a.isInfinity() && as.isNaR()) continue;
+    if (a.isInfinity() && as.isInfinity()) continue;
         
         
         for (uint64_t j=0;j<max;j+=stride) {
             b.d = j;
-            bs.value = b.d;
+            bs.d = b.d;
+            // bs.value = b.d; // from posit16 (external library)
 
             ab  = a+b;
             abs = as+bs;
 
-            if (ab.d != abs.value) {
+            if (ab.d != abs.d) { // if (ab.d != abs.value) {
 
                 cout << "gmp" << a << " + " << b << " = " << ab << endl;
                 cout << "soft" << as << " + " << bs << " = " << abs << endl << endl;
@@ -426,7 +432,7 @@ void testArithmetic() {
             ab  = a-b;
             abs = as-bs;
 
-            if (ab.d != abs.value) {
+            if (ab.d != abs.d) { // if (ab.d != abs.value) {
 
                 cout << "gmp" << a << " - " << b << " = " << ab << endl;
                 cout << "soft" << as << " - " << bs << " = " << abs << endl << endl;
@@ -436,7 +442,7 @@ void testArithmetic() {
             ab  = a*b;
             abs = as*bs;
 
-            if (ab.d != abs.value) {
+            if (ab.d != abs.d) { // if (ab.d != abs.value {
 
                 cout << "gmp" << a << " * " << b << " = " << ab << endl;
                 cout << "soft" << as << " * " << bs << " = " << abs << endl << endl;
@@ -446,7 +452,7 @@ void testArithmetic() {
             abs = as/bs;
             
             //abs.value
-            if (ab.d != abs.value) {
+            if (ab.d != abs.d) { // if (ab.d != abs.value) {
                 //mpf_class m1, m2, rm;
                 //a.get(m1);
                 //b.get(m2);
