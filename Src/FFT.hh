@@ -12,14 +12,12 @@ using namespace std;
 /*Convenience Functions*/
 
 //mod that only returns positive values. 
-int mod(int m, int n)  { return m % n >= 0 ? (m % n) : ((m % n) + n); }
+int mod(int m, int n); //  { return m % n >= 0 ? (m % n) : ((m % n) + n); }
 
-int powerOfTwo(uint n) {return (n & (n-1)) == 0;}
+int powerOfTwo(uint n); // {return (n & (n-1)) == 0;}
 
 template <class T>
-void partition(vector<T> &out, vector<T> &in, int odd) {
-	for (int i=0;i<out.size();++i) out[i]=in[2*i+odd];
-}
+void partition(vector<T> &out, vector<T> &in, int odd);
 
 //flatten matrix into 1D vector.
 template <class T>
