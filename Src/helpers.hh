@@ -121,4 +121,9 @@ void printVector(vector<E> v) {
 
 //void writeAllMatrixInfo(string directory, string filename);
 
+// Gets an integer from cin.
+// If the user inputs a non-integer, asks again until the user inputs a valid integer.
+// Any input past the integer is ignored and removed from the buffer.
+int getInteger();
+
 #endif

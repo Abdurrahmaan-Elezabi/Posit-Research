@@ -1,6 +1,8 @@
 #include  <fstream>
 #include "helpers.hh"
 
+using namespace std;
+
 //Get random mpf value in [0, 1]
 mpf_class rand(gmp_randstate_t r) {
     mpf_class m;
@@ -218,3 +220,17 @@ void writeAllMatrixInfo(string directory, string filename) {
     Posit32::writeAdvantage(file);
     file.close();
 }*/
+
+int getInteger() {
+    int value;
+    while (true) {
+        if (cin >> value) {
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            return value;
+        } else {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Please enter an integer" << endl;
+        }
+    }
+}

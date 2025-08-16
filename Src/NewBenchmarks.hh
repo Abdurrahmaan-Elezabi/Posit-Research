@@ -1,0 +1,22 @@
+#ifndef __NEWBENCHMARKS_HH_
+#define __NEWBENCHMARKS_HH_
+
+// Mostly identical to Benchmarks.hh
+
+#include <string.h>
+#include <gmpxx.h>
+#include <fstream>
+#include "helpers.hh"
+#include "Matrix.hh"
+
+void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix", double relativeTolerance=1e-5);
+
+void trisolveTest(Matrix<mpf_class> M);
+
+void fftTest();
+
+void fftTest2D();
+
+void convolveImage(string imgFilename, string kernelFilename, string output);
+
+#endif

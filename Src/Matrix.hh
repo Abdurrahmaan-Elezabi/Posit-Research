@@ -1512,9 +1512,10 @@ public:
         MM_typecode matcode;
 
         
-        if ((f = fopen(filename, "r")) == NULL)
-            return 1;
-        
+        if ((f = fopen(filename, "r")) == NULL) {
+            cout << "File name " << filename << " not found" << endl;
+            return 0;
+        }
         if (mm_read_banner(f, &matcode) != 0)
         {
             printf("Could not process Matrix Market banner.\n");

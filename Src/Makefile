@@ -55,6 +55,12 @@ Benchmarks: Benchmarks.o libPosit.a
 Benchmarks.o: Benchmarks.cc Matrix.hh mmio.hh helpers.hh FFT.hh Quire.hh
 	$(CXX) $(CFLAGS) -c Benchmarks.cc
 
+NewBenchmarks: NewBenchmarks.o libPosit.a
+	$(CXX) $(CFLAGS) -o NewBenchmarks NewBenchmarks.o -lPosit $(LINK)
+
+NewBenchmarks.o: NewBenchmarks.cc Matrix.hh mmio.hh helpers.hh FFT.hh Quire.hh
+	$(CXX) $(CFLAGS) -c NewBenchmarks.cc
+
 gmp_helpers.o: gmp_helpers.cc gmp_helpers.hh
 	$(CXX) $(CFLAGS) -c gmp_helpers.cc
 
