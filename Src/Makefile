@@ -7,7 +7,7 @@ OBJECTS = Posit32.o PositBase.o bfloat16.o gmp_helpers.o
 
 # all: Test2 matrix
 
-all: Benchmarks
+all: Benchmarks NewBenchmarks
 
 libPosit.a: PositBase.o Posit32.o Quire.o bfloat16.o FFT.o gmp_helpers.o helpers.o mmio.o
 	$(ARCHIVE) libPosit.a PositBase.o Posit32.o helpers.o gmp_helpers.o FFT.o bfloat16.o Quire.o mmio.o

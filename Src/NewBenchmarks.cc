@@ -14,7 +14,6 @@ using namespace std;
 using namespace cimg_library;
 using half_float::half;
 
-// Runs CG on the given matrix and plots residual after each iteration.
 // For now, only works with 32 bit floats.
 // TODO: add options for other precisions
 void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix", double relativeTolerance=1e-5) {
@@ -62,15 +61,52 @@ void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix", double rela
     cout << '\t' << "float relative residual = "    << rF/M.vectorNorm(bM) << endl;
 }
 
+void trisolveTest(Matrix<mpf_class> M) {
+    if (!(M.isSquare())) {fprintf(stderr, "Please input square matrix for Tri-Solve test."); return;}
+    cout << "Running direct solve benchmark..." << endl;
+    int n = M.nCols();
+
+    Matrix<double    > D;
+    Matrix<float     > F;
+
+    vector<mpf_class> xM = vector<mpf_class>(n, 1/sqrt(mpf_class(n)));
+    vector<mpf_class> bM = matVec(M, xM);
+
+    D.set(M);
+    F.set(M);
+
+    vector<double    > xD(n);
+    vector<float     > xF(n);
+
+    vector<double> bD(n);
+    vector<float> bF(n);
+
+    downcast(bD, bM);
+    downcast(bF, bM);
+
+    D.triSolve(xD, bD);
+    F.triSolve(xF, bF);
+
+    vector<mpf_class> bmD(n), bmF(n);
+    upcast(bmD,matVec(D, xD));
+    upcast(bmF,matVec(F, xF));
+
+    mpf_class rD = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmD));
+    mpf_class rF = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmF));
+
+    cout << "Final residuals:" << endl;
+    cout << "double relative residual = "   << rD/M.vectorNorm(bM) << endl;
+    cout << "float relative residual = "    << rF/M.vectorNorm(bM) << endl;
+}
+
 int main(int argc, char* argv[]) {
     if (argc != 1) {
         cout << "Usage: ./NewBenchmarks" << endl;
         return EXIT_FAILURE;
     }
-    // TODO: add other test IDs
-    cout << "Enter test ID (0 for CG):" << endl;
+    cout << "Enter test ID (0 for CG, 1 for Trisolve):" << endl;
     int testID = getInteger();
-    while (testID != 0) {
+    while (testID < 0 || testID > 1) {
         cout << "Please enter a valid test ID" << endl;
         testID = getInteger();
     }
@@ -83,6 +119,13 @@ int main(int argc, char* argv[]) {
         cout << "Try again" << endl;
         cin >> filename;
     }
-    CGTest(systemM);
+    switch (testID) {
+        case 0:
+            CGTest(systemM);
+            break;
+        case 1:
+            trisolveTest(systemM);
+            break;
+    }
     return EXIT_SUCCESS;
 }

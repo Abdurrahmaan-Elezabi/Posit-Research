@@ -9,8 +9,10 @@
 #include "helpers.hh"
 #include "Matrix.hh"
 
+// Runs CG on the given matrix and plots residual after each iteration.
 void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix", double relativeTolerance=1e-5);
 
+// Runs Trisolve on the given matrix and reports final residual
 void trisolveTest(Matrix<mpf_class> M);
 
 void fftTest();
