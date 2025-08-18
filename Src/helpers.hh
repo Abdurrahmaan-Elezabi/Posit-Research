@@ -126,4 +126,8 @@ void printVector(vector<E> v) {
 // Any input past the integer is ignored and removed from the buffer.
 int getInteger();
 
+// Gets either a yes or a no from cin.
+// If the user inputs anything else, asks again
+bool yesNo();
+
 #endif

@@ -234,3 +234,16 @@ int getInteger() {
         }
     }
 }
+
+bool yesNo() {
+    string answer = "";
+    cin >> answer;
+    while (answer != "y" && answer != "n") {
+        cout << "Please enter y or n" << endl;
+        cin >> answer;
+    }
+    if (answer == "y") {
+        return true;
+    }
+    return false;
+}

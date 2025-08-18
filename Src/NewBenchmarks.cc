@@ -14,15 +14,23 @@ using namespace std;
 using namespace cimg_library;
 using half_float::half;
 
-// For now, only works with 32 bit floats.
-// TODO: add options for other precisions
-void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix", double relativeTolerance=1e-5) {
+void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
+    string identifier="", bool plot=false, double relativeTolerance=1e-5, bool scale=false) {
     if (!(M.isSymmetric())) {fprintf(stderr, "Please input symmetric matrix for CG test."); return;}
 
+    string infoFilename = "plots/CG" + identifier;
+    string plotfile;
+
+    if (plot) plotfile = "plots/" + (matrixname + identifier) + ".csv";
+    
     int n = M.nCols();
 
     vector<mpf_class> xM = vector<mpf_class>(n, 1/sqrt(mpf_class(n)));
     vector<mpf_class> bM = matVec(M, xM);
+
+    if (scale) {
+        M.scaleNorm(M, bM);
+    }
 
     Matrix<double    > D;
     Matrix<float     > F;
@@ -44,11 +52,17 @@ void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix", double rela
 
     int f, d;
     puts("starting CG step");
-    f = F.conjugateGradientSolver(tolerance, F, bF, xF);
-    d = D.conjugateGradientSolver(tolerance, D, bD, xD);
+    f = F.conjugateGradientSolver(tolerance, F, bF, xF, plotfile);
+    d = D.conjugateGradientSolver(tolerance, D, bD, xD, plotfile);
 
-    cout << '\t' << "double iterations = "  << d << endl;
-    cout << '\t' << "float iterations = "   << f << endl;
+    cout << "Scale? " << scale << endl;
+    cout << "Max entry: " << M.getMax() << endl;
+    cout << "Min entry: " << M.getMin() << endl;
+    // Using minus here made more sense to me when talking about range.
+    // I was also getting issues with division by zero. Should I change it back?
+    cout << "Range: " << M.getMax() - M.getMin() << endl;
+    cout << "double iterations = "  << d << endl;
+    cout << "float iterations = "   << f << endl;
 
     vector<mpf_class> bmD(n), bmF(n);
     upcast(bmD,matVec(D, xD)); 
@@ -104,24 +118,39 @@ int main(int argc, char* argv[]) {
         cout << "Usage: ./NewBenchmarks" << endl;
         return EXIT_FAILURE;
     }
+
     cout << "Enter test ID (0 for CG, 1 for Trisolve):" << endl;
     int testID = getInteger();
     while (testID < 0 || testID > 1) {
         cout << "Please enter a valid test ID" << endl;
         testID = getInteger();
     }
+
     Matrix<mpf_class> systemM;
     string root = "./MatrixMarket/";
     string filename;
+    bool scale;
+    bool plot;
+    string identifier = "";
+    string matrixname;
+    double tolerance = 1e-5;
+
     cout << "Enter mtx file name (see MatrixMarket):" << endl;
     cin >> filename;
     while (!systemM.loadMPF((root + filename).c_str())) {
         cout << "Try again" << endl;
         cin >> filename;
     }
+    cout << "Enter matrix name:" << endl;
+    cin >> matrixname;
+    cout << "Scale? (y/n)" << endl;
+    scale = yesNo();
+    cout << "Plot? (y/n)" << endl;
+    plot = yesNo();
+
     switch (testID) {
         case 0:
-            CGTest(systemM);
+            CGTest(systemM, matrixname, identifier, plot, tolerance, scale);
             break;
         case 1:
             trisolveTest(systemM);
