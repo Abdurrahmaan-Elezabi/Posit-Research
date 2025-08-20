@@ -14,7 +14,7 @@ void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
     string identifier="", bool plot=false, double relativeTolerance=1e-5, bool scale=false);
 
 // Runs Trisolve on the given matrix and reports final residual
-void trisolveTest(Matrix<mpf_class> M);
+void trisolveTest(Matrix<mpf_class> M, bool scale=false);
 
 void fftTest();
 

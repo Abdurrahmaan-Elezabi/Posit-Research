@@ -75,7 +75,7 @@ void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
     cout << '\t' << "float relative residual = "    << rF/M.vectorNorm(bM) << endl;
 }
 
-void trisolveTest(Matrix<mpf_class> M) {
+void trisolveTest(Matrix<mpf_class> M, bool scale=false) {
     if (!(M.isSquare())) {fprintf(stderr, "Please input square matrix for Tri-Solve test."); return;}
     cout << "Running direct solve benchmark..." << endl;
     int n = M.nCols();
@@ -98,6 +98,12 @@ void trisolveTest(Matrix<mpf_class> M) {
     downcast(bD, bM);
     downcast(bF, bM);
 
+    if (scale) {
+        M.diagScaleAvg(3, M, bM);
+        D.diagScaleAvg(3, D, bD);
+        F.diagScaleAvg(3, F, bF);
+    }
+
     D.triSolve(xD, bD);
     F.triSolve(xF, bF);
 
@@ -109,6 +115,7 @@ void trisolveTest(Matrix<mpf_class> M) {
     mpf_class rF = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmF));
 
     cout << "Final residuals:" << endl;
+    cout << "Scale?: " << scale << endl;
     cout << "double relative residual = "   << rD/M.vectorNorm(bM) << endl;
     cout << "float relative residual = "    << rF/M.vectorNorm(bM) << endl;
 }
@@ -145,15 +152,15 @@ int main(int argc, char* argv[]) {
     cin >> matrixname;
     cout << "Scale? (y/n)" << endl;
     scale = yesNo();
-    cout << "Plot? (y/n)" << endl;
-    plot = yesNo();
 
     switch (testID) {
         case 0:
+            cout << "Plot? (y/n)" << endl;
+            plot = yesNo();
             CGTest(systemM, matrixname, identifier, plot, tolerance, scale);
             break;
         case 1:
-            trisolveTest(systemM);
+            trisolveTest(systemM, scale);
             break;
     }
     return EXIT_SUCCESS;
