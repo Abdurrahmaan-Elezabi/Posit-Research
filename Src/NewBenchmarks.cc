@@ -9,11 +9,13 @@
 #include <boost/filesystem.hpp>
 #include "FFT.hh"
 #include "Quire.hh"
+#include "bfloat16.hh"
 
 using namespace std;
 using namespace cimg_library;
 using half_float::half;
 
+// TODO: half and bfloat16 don't work
 void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
     string identifier="", bool plot=false, double relativeTolerance=1e-5, bool scale=false) {
     if (!(M.isSymmetric())) {fprintf(stderr, "Please input symmetric matrix for CG test."); return;}
@@ -22,6 +24,7 @@ void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
     string plotfile;
 
     if (plot) plotfile = "plots/" + (matrixname + identifier) + ".csv";
+    ofstream infoFile;
     
     int n = M.nCols();
 
@@ -34,26 +37,45 @@ void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
 
     Matrix<double    > D;
     Matrix<float     > F;
+    Matrix<Posit32gmp> P;
+    //Matrix<half      > H;
+    //Matrix<bfloat16  > B;
 
     D.set(M);
     F.set(M);
+    P.set(M);
+    //H.set(M);
+    //B.set(M);
 
     vector<double    > xD(n);
     vector<float     > xF(n);
+    vector<Posit32gmp> xP(n);
+    //vector<half      > xH(n);
+    //vector<bfloat16  > xB(n);
 
     vector<double    > bD(n);
     vector<float     > bF(n);
+    vector<Posit32gmp> bP(n);
+    //vector<half      > bH(n);
+    //vector<bfloat16  > bB(n);
 
     downcast(bD, bM);
     downcast(bF, bM);
+    downcast(bP, bM);
+    //downcast(bH, bM);
+    //downcast(bB, bM);
 
     double tolerance = M.vectorNorm(bM).get_d()*relativeTolerance;
     cout << "Aiming for relative error of " << relativeTolerance << endl;
 
-    int f, d;
+    Posit32::clearCounter();
+    int f, d, p, h, b;
     puts("starting CG step");
     f = F.conjugateGradientSolver(tolerance, F, bF, xF, plotfile);
     d = D.conjugateGradientSolver(tolerance, D, bD, xD, plotfile);
+    p = P.conjugateGradientSolver(tolerance, P, bP, xP, plotfile);
+    //h = H.conjugateGradientSolver(tolerance, H, bH, xH, plotfile);
+    //b = P.conjugateGradientSolver(tolerance, B, bB, xB, plotfile);
 
     cout << "Scale? " << scale << endl;
     cout << "Max entry: " << M.getMax() << endl;
@@ -61,20 +83,57 @@ void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
     // Using minus here made more sense to me when talking about range.
     // I was also getting issues with division by zero. Should I change it back?
     cout << "Range: " << M.getMax() - M.getMin() << endl;
-    cout << "double iterations = "  << d << endl;
-    cout << "float iterations = "   << f << endl;
+    cout << "double iterations = "   << d << endl;
+    cout << "float iterations = "    << f << endl;
+    cout << "posit iterations = "    << p << endl;
+    //cout << "half iterations = "     << h << endl;
+    //cout << "bfloat16 iterations = " << b << endl;
 
-    vector<mpf_class> bmD(n), bmF(n);
+    infoFile.open(infoFilename, ofstream::app);
+    infoFile << matrixname << endl;
+    infoFile << "relative error tolerance: " << relativeTolerance << endl;
+    infoFile << "Scale?: " << scale << endl;
+    infoFile << "Max/min entry: " << M.getMax() << " : " << M.getMin() << "Range: " << M.getMax() - M.getMin() << endl;
+    infoFile << "double iterations = "   << d << endl;
+    infoFile << "float iterations = "    << f << endl;
+    infoFile << "posit iterations = "    << p << endl;
+    //infoFile << "half iterations = "     << h << endl;
+    //infoFile << "bfloat16 iterations = " << b << endl;
+    infoFile.close();
+
+    vector<mpf_class> bmD(n), bmF(n), bmP(n), bmH(n), bmB(n);
+
     upcast(bmD,matVec(D, xD)); 
     upcast(bmF,matVec(F, xF));
+    upcast(bmP,matVec(P, xP));
+    //upcast(bmH,matVec(H, xH));
+    //upcast(bmB,matVec(B, xB));
+
     mpf_class rD = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmD));
     mpf_class rF = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmF));
+    mpf_class rP = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmP));
+    //mpf_class rH = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmH));
+    //mpf_class rB = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmB));
 
     puts("\nFinal Residuals:");
     cout << '\t' << "double relative residual = "   << rD/M.vectorNorm(bM) << endl;
     cout << '\t' << "float relative residual = "    << rF/M.vectorNorm(bM) << endl;
+    cout << '\t' << "posit relative residual = "    << rP/M.vectorNorm(bM) << endl;
+    //cout << '\t' << "half relative residual = "     << rH/M.vectorNorm(bM) << endl;
+    //cout << '\t' << "bfloat16 relative residual = " << rB/M.vectorNorm(bM) << endl;
+
+    infoFile.open(infoFilename, ofstream::app);
+    infoFile << endl;
+    infoFile << '\t' << "double relative residual = "   << rD/M.vectorNorm(bM) << endl;
+    infoFile << '\t' << "float relative residual = "    << rF/M.vectorNorm(bM) << endl;
+    infoFile << '\t' << "posit relative residual = "    << rP/M.vectorNorm(bM) << endl;
+    //infoFile << '\t' << "half relative residual = "     << rH/M.vectorNorm(bM) << endl;
+    //infoFile << '\t' << "bfloat16 relative residual = " << rB/M.vectorNorm(bM) << endl;
+    infoFile << endl;
+    infoFile.close();
 }
 
+// TODO: implement half and bfloat16 after fixing issues
 void trisolveTest(Matrix<mpf_class> M, bool scale=false) {
     if (!(M.isSquare())) {fprintf(stderr, "Please input square matrix for Tri-Solve test."); return;}
     cout << "Running direct solve benchmark..." << endl;
@@ -82,42 +141,54 @@ void trisolveTest(Matrix<mpf_class> M, bool scale=false) {
 
     Matrix<double    > D;
     Matrix<float     > F;
+    Matrix<Posit32gmp> P;
 
     vector<mpf_class> xM = vector<mpf_class>(n, 1/sqrt(mpf_class(n)));
     vector<mpf_class> bM = matVec(M, xM);
 
     D.set(M);
     F.set(M);
+    P.set(M);
 
     vector<double    > xD(n);
     vector<float     > xF(n);
+    vector<Posit32gmp> xP(n);
 
     vector<double> bD(n);
     vector<float> bF(n);
+    vector<Posit32gmp> bP(n);
 
     downcast(bD, bM);
     downcast(bF, bM);
+    downcast(bP, bM);
 
     if (scale) {
         M.diagScaleAvg(3, M, bM);
         D.diagScaleAvg(3, D, bD);
         F.diagScaleAvg(3, F, bF);
+        P.diagScaleAvg(3, P, bP);
     }
+
+    Posit32::clearCounter();
 
     D.triSolve(xD, bD);
     F.triSolve(xF, bF);
+    P.triSolve(xP, bP);
 
-    vector<mpf_class> bmD(n), bmF(n);
+    vector<mpf_class> bmD(n), bmF(n), bmP(n);
     upcast(bmD,matVec(D, xD));
     upcast(bmF,matVec(F, xF));
+    upcast(bmP,matVec(P, xP));
 
     mpf_class rD = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmD));
     mpf_class rF = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmF));
+    mpf_class rP = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmP));
 
     cout << "Final residuals:" << endl;
     cout << "Scale?: " << scale << endl;
     cout << "double relative residual = "   << rD/M.vectorNorm(bM) << endl;
     cout << "float relative residual = "    << rF/M.vectorNorm(bM) << endl;
+    cout << "posit relative residual = "    << rP/M.vectorNorm(bM) << endl;
 }
 
 int main(int argc, char* argv[]) {
@@ -155,8 +226,10 @@ int main(int argc, char* argv[]) {
 
     switch (testID) {
         case 0:
-            cout << "Plot? (y/n)" << endl;
-            plot = yesNo();
+            //cout << "Plot? (y/n)" << endl;
+            //plot = yesNo();
+            // No reason not to plot?
+            plot = true;
             CGTest(systemM, matrixname, identifier, plot, tolerance, scale);
             break;
         case 1:
