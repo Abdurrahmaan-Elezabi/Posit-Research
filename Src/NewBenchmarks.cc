@@ -134,10 +134,14 @@ void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
 }
 
 // TODO: implement half and bfloat16 after fixing issues
-void trisolveTest(Matrix<mpf_class> M, bool scale=false) {
+void trisolveTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
+    string identifier="", bool cholesky=false, bool scale=false) {
     if (!(M.isSquare())) {fprintf(stderr, "Please input square matrix for Tri-Solve test."); return;}
     cout << "Running direct solve benchmark..." << endl;
     int n = M.nCols();
+
+    string infoFilename = "plots/TriSolve" + identifier;
+    ofstream infoFile;
 
     Matrix<double    > D;
     Matrix<float     > F;
@@ -171,9 +175,22 @@ void trisolveTest(Matrix<mpf_class> M, bool scale=false) {
 
     Posit32::clearCounter();
 
-    D.triSolve(xD, bD);
-    F.triSolve(xF, bF);
-    P.triSolve(xP, bP);
+    if (cholesky) {
+        D.symmetricTriSolve(xD, bD);
+        F.symmetricTriSolve(xF, bF);
+        P.symmetricTriSolve(xP, bP);
+    } else {
+        D.triSolve(xD, bD);
+        F.triSolve(xF, bF);
+        P.triSolve(xP, bP);
+    }
+
+    infoFile.open(infoFilename, ofstream::app);
+    infoFile << matrixname << endl;
+    infoFile << "Scale?: " << scale << endl;
+    infoFile << "Cholesky?: " << cholesky << endl;
+    // infoFile << "Average posit advantage: " << Posit32::distillAdvantage() << endl; // has a bug
+    infoFile.close();
 
     vector<mpf_class> bmD(n), bmF(n), bmP(n);
     upcast(bmD,matVec(D, xD));
@@ -186,9 +203,16 @@ void trisolveTest(Matrix<mpf_class> M, bool scale=false) {
 
     cout << "Final residuals:" << endl;
     cout << "Scale?: " << scale << endl;
+    cout << "Cholesky?: " << cholesky << endl;
     cout << "double relative residual = "   << rD/M.vectorNorm(bM) << endl;
     cout << "float relative residual = "    << rF/M.vectorNorm(bM) << endl;
     cout << "posit relative residual = "    << rP/M.vectorNorm(bM) << endl;
+
+    infoFile.open(infoFilename, ofstream::app);
+    infoFile << '\t' << "double relative residual = " << rD/M.vectorNorm(bM) << endl;
+    infoFile << '\t' << "float relative residual = "  << rF/M.vectorNorm(bM) << endl;
+    infoFile << '\t' << "posit relative residual = "  << rP/M.vectorNorm(bM) << endl;
+    infoFile.close();
 }
 
 int main(int argc, char* argv[]) {
@@ -233,7 +257,9 @@ int main(int argc, char* argv[]) {
             CGTest(systemM, matrixname, identifier, plot, tolerance, scale);
             break;
         case 1:
-            trisolveTest(systemM, scale);
+            cout << "Cholesky? (y/n)" << endl;
+            bool cholesky = yesNo();
+            trisolveTest(systemM, matrixname, identifier, cholesky, scale);
             break;
     }
     return EXIT_SUCCESS;
