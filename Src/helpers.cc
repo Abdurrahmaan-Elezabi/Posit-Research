@@ -247,3 +247,11 @@ bool yesNo() {
     }
     return false;
 }
+
+void setHalfMaxVec(vector<half> &v){
+    for (int i = 0; i < v.size(); i++) {
+        if (v[i] > 65504) {
+            v[i] = 65504;
+        }
+    }
+}

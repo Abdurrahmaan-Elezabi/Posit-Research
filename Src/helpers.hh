@@ -130,4 +130,8 @@ int getInteger();
 // If the user inputs anything else, asks again
 bool yesNo();
 
+// Sets all inf values in the given vector to be the maximum representable
+// value in halfs instead.
+void setHalfMaxVec(vector<half> &v);
+
 #endif

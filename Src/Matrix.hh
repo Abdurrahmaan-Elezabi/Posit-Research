@@ -45,6 +45,22 @@ public:
         }
         return true;
     }
+
+    // Sets all inf values in the matrix to be the maximum representable
+    // value in halfs instead.
+    // Technically can be used on matrices of any type, but mostly only
+    // useful in matrices containing halfs.
+    bool setHalfMax() {
+        for(int i=0;i< nRows();i++){
+            for(int j=0;j< nCols();j++){
+                if (m[i][j] > 65504) {
+                    m[i][j] = 65504;
+                }
+            }
+        }
+        return true;
+    }
+
     bool setIdentity(){
         if(m.size()<1 || this->nRows()!=this->nCols()) fprintf(stderr,"setIdentity failed on non-square matrix [%u,%u]\n",this->nRows(),this->nCols());
         this->setZero();
@@ -61,6 +77,17 @@ public:
                 std::cout << "[" << i << "," << j << "]=" << m[i][j] << '\t';
             }
             printf("\n");
+        }
+    }
+
+    // Prints the contents of the matrix in a more compact form
+    void printPure() const {
+        unsigned i,j;
+        for(i=0;i < this->nRows();i++){
+            std::cout << std::endl << "Row " << i << std::endl;
+            for(j=0;j < this->nCols();j++){
+                std::cout << m[i][j] << " ";
+            }
         }
     }
     

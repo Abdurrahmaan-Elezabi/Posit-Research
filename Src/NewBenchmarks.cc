@@ -15,7 +15,7 @@ using namespace std;
 using namespace cimg_library;
 using half_float::half;
 
-// TODO: half and bfloat16 don't work
+// TODO: half doesn't work
 void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
     string identifier="", bool plot=false, double relativeTolerance=1e-5, bool scale=false) {
     if (!(M.isSymmetric())) {fprintf(stderr, "Please input symmetric matrix for CG test."); return;}
@@ -39,31 +39,31 @@ void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
     Matrix<float     > F;
     Matrix<Posit32gmp> P;
     //Matrix<half      > H;
-    //Matrix<bfloat16  > B;
+    Matrix<bfloat16  > B;
 
     D.set(M);
     F.set(M);
     P.set(M);
     //H.set(M);
-    //B.set(M);
+    B.set(M);
 
     vector<double    > xD(n);
     vector<float     > xF(n);
     vector<Posit32gmp> xP(n);
     //vector<half      > xH(n);
-    //vector<bfloat16  > xB(n);
+    vector<bfloat16  > xB(n);
 
     vector<double    > bD(n);
     vector<float     > bF(n);
     vector<Posit32gmp> bP(n);
     //vector<half      > bH(n);
-    //vector<bfloat16  > bB(n);
+    vector<bfloat16  > bB(n);
 
     downcast(bD, bM);
     downcast(bF, bM);
     downcast(bP, bM);
     //downcast(bH, bM);
-    //downcast(bB, bM);
+    downcast(bB, bM);
 
     double tolerance = M.vectorNorm(bM).get_d()*relativeTolerance;
     cout << "Aiming for relative error of " << relativeTolerance << endl;
@@ -75,7 +75,7 @@ void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
     d = D.conjugateGradientSolver(tolerance, D, bD, xD, plotfile);
     p = P.conjugateGradientSolver(tolerance, P, bP, xP, plotfile);
     //h = H.conjugateGradientSolver(tolerance, H, bH, xH, plotfile);
-    //b = P.conjugateGradientSolver(tolerance, B, bB, xB, plotfile);
+    b = B.conjugateGradientSolver(tolerance, B, bB, xB, plotfile);
 
     cout << "Scale? " << scale << endl;
     cout << "Max entry: " << M.getMax() << endl;
@@ -87,7 +87,7 @@ void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
     cout << "float iterations = "    << f << endl;
     cout << "posit iterations = "    << p << endl;
     //cout << "half iterations = "     << h << endl;
-    //cout << "bfloat16 iterations = " << b << endl;
+    cout << "bfloat16 iterations = " << b << endl;
 
     infoFile.open(infoFilename, ofstream::app);
     infoFile << matrixname << endl;
@@ -98,7 +98,7 @@ void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
     infoFile << "float iterations = "    << f << endl;
     infoFile << "posit iterations = "    << p << endl;
     //infoFile << "half iterations = "     << h << endl;
-    //infoFile << "bfloat16 iterations = " << b << endl;
+    infoFile << "bfloat16 iterations = " << b << endl;
     infoFile.close();
 
     vector<mpf_class> bmD(n), bmF(n), bmP(n), bmH(n), bmB(n);
@@ -107,20 +107,20 @@ void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
     upcast(bmF,matVec(F, xF));
     upcast(bmP,matVec(P, xP));
     //upcast(bmH,matVec(H, xH));
-    //upcast(bmB,matVec(B, xB));
+    upcast(bmB,matVec(B, xB));
 
     mpf_class rD = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmD));
     mpf_class rF = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmF));
     mpf_class rP = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmP));
     //mpf_class rH = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmH));
-    //mpf_class rB = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmB));
+    mpf_class rB = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmB));
 
     puts("\nFinal Residuals:");
     cout << '\t' << "double relative residual = "   << rD/M.vectorNorm(bM) << endl;
     cout << '\t' << "float relative residual = "    << rF/M.vectorNorm(bM) << endl;
     cout << '\t' << "posit relative residual = "    << rP/M.vectorNorm(bM) << endl;
     //cout << '\t' << "half relative residual = "     << rH/M.vectorNorm(bM) << endl;
-    //cout << '\t' << "bfloat16 relative residual = " << rB/M.vectorNorm(bM) << endl;
+    cout << '\t' << "bfloat16 relative residual = " << rB/M.vectorNorm(bM) << endl;
 
     infoFile.open(infoFilename, ofstream::app);
     infoFile << endl;
@@ -128,7 +128,7 @@ void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
     infoFile << '\t' << "float relative residual = "    << rF/M.vectorNorm(bM) << endl;
     infoFile << '\t' << "posit relative residual = "    << rP/M.vectorNorm(bM) << endl;
     //infoFile << '\t' << "half relative residual = "     << rH/M.vectorNorm(bM) << endl;
-    //infoFile << '\t' << "bfloat16 relative residual = " << rB/M.vectorNorm(bM) << endl;
+    infoFile << '\t' << "bfloat16 relative residual = " << rB/M.vectorNorm(bM) << endl;
     infoFile << endl;
     infoFile.close();
 }
@@ -146,6 +146,7 @@ void trisolveTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
     Matrix<double    > D;
     Matrix<float     > F;
     Matrix<Posit32gmp> P;
+    Matrix<bfloat16  > B;
 
     vector<mpf_class> xM = vector<mpf_class>(n, 1/sqrt(mpf_class(n)));
     vector<mpf_class> bM = matVec(M, xM);
@@ -153,24 +154,29 @@ void trisolveTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
     D.set(M);
     F.set(M);
     P.set(M);
+    B.set(M);
 
     vector<double    > xD(n);
     vector<float     > xF(n);
     vector<Posit32gmp> xP(n);
+    vector<bfloat16  > xB(n);
 
     vector<double> bD(n);
     vector<float> bF(n);
     vector<Posit32gmp> bP(n);
+    vector<bfloat16> bB(n);
 
     downcast(bD, bM);
     downcast(bF, bM);
     downcast(bP, bM);
+    downcast(bB, bM);
 
     if (scale) {
         M.diagScaleAvg(3, M, bM);
         D.diagScaleAvg(3, D, bD);
         F.diagScaleAvg(3, F, bF);
         P.diagScaleAvg(3, P, bP);
+        B.diagScaleAvg(3, B, bB);
     }
 
     Posit32::clearCounter();
@@ -179,10 +185,12 @@ void trisolveTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
         D.symmetricTriSolve(xD, bD);
         F.symmetricTriSolve(xF, bF);
         P.symmetricTriSolve(xP, bP);
+        B.symmetricTriSolve(xB, bB);
     } else {
         D.triSolve(xD, bD);
         F.triSolve(xF, bF);
         P.triSolve(xP, bP);
+        B.triSolve(xB, bB);
     }
 
     infoFile.open(infoFilename, ofstream::app);
@@ -192,14 +200,16 @@ void trisolveTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
     // infoFile << "Average posit advantage: " << Posit32::distillAdvantage() << endl; // has a bug
     infoFile.close();
 
-    vector<mpf_class> bmD(n), bmF(n), bmP(n);
+    vector<mpf_class> bmD(n), bmF(n), bmP(n), bmB(n);
     upcast(bmD,matVec(D, xD));
     upcast(bmF,matVec(F, xF));
     upcast(bmP,matVec(P, xP));
+    upcast(bmB,matVec(B, xB));
 
     mpf_class rD = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmD));
     mpf_class rF = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmF));
     mpf_class rP = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmP));
+    mpf_class rB = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmB));
 
     cout << "Final residuals:" << endl;
     cout << "Scale?: " << scale << endl;
@@ -207,11 +217,13 @@ void trisolveTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
     cout << "double relative residual = "   << rD/M.vectorNorm(bM) << endl;
     cout << "float relative residual = "    << rF/M.vectorNorm(bM) << endl;
     cout << "posit relative residual = "    << rP/M.vectorNorm(bM) << endl;
+    cout << "bfloat16 relative residual = " << rB/M.vectorNorm(bM) << endl;
 
     infoFile.open(infoFilename, ofstream::app);
-    infoFile << '\t' << "double relative residual = " << rD/M.vectorNorm(bM) << endl;
-    infoFile << '\t' << "float relative residual = "  << rF/M.vectorNorm(bM) << endl;
-    infoFile << '\t' << "posit relative residual = "  << rP/M.vectorNorm(bM) << endl;
+    infoFile << '\t' << "double relative residual = "   << rD/M.vectorNorm(bM) << endl;
+    infoFile << '\t' << "float relative residual = "    << rF/M.vectorNorm(bM) << endl;
+    infoFile << '\t' << "posit relative residual = "    << rP/M.vectorNorm(bM) << endl;
+    infoFile << '\t' << "bfloat16 relative residual = " << rB/M.vectorNorm(bM) << endl;
     infoFile.close();
 }
 
