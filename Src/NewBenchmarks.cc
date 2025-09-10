@@ -17,7 +17,8 @@ using half_float::half;
 
 // TODO: half doesn't work
 void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
-    string identifier="", bool plot=false, double relativeTolerance=1e-5, bool scale=false) {
+    string identifier="", bool quire=false, bool plot=false,
+    double relativeTolerance=1e-5, bool scale=false, bool stochastic=false) {
     if (!(M.isSymmetric())) {fprintf(stderr, "Please input symmetric matrix for CG test."); return;}
 
     string infoFilename = "plots/CG" + identifier;
@@ -71,11 +72,27 @@ void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
     Posit32::clearCounter();
     int f, d, p, h, b;
     puts("starting CG step");
-    f = F.conjugateGradientSolver(tolerance, F, bF, xF, plotfile);
-    d = D.conjugateGradientSolver(tolerance, D, bD, xD, plotfile);
-    p = P.conjugateGradientSolver(tolerance, P, bP, xP, plotfile);
-    //h = H.conjugateGradientSolver(tolerance, H, bH, xH, plotfile);
-    b = B.conjugateGradientSolver(tolerance, B, bB, xB, plotfile);
+    
+    if (quire) {
+        f = F.conjugateGradientSolverQuire(tolerance, F, bF, xF, plotfile);
+        d = D.conjugateGradientSolverQuire(tolerance, D, bD, xD, plotfile);
+        p = conjugateGradientSolverQ(tolerance, P, bP, xP, plotfile, "", false);
+        b = B.conjugateGradientSolverQuire(tolerance, B, bB, xB, plotfile);
+        //h = H.conjugateGradientSolverQuire(tolerance, H, bH, xH, plotfile);
+    } else if (stochastic) {
+        f = F.conjugateGradientSolverStochastic(tolerance, F, bF, xF, plotfile);
+        d = D.conjugateGradientSolverStochastic(tolerance, D, bD, xD, plotfile);
+        p = P.conjugateGradientSolverStochastic(tolerance, P, bP, xP, plotfile);
+        b = B.conjugateGradientSolverStochastic(tolerance, B, bB, xB, plotfile);
+        //h = H.conjugateGradientSolverStochastic(tolerance, H, bH, xH, plotfile);
+    } else {
+        f = F.conjugateGradientSolver(tolerance, F, bF, xF, plotfile);
+        d = D.conjugateGradientSolver(tolerance, D, bD, xD, plotfile);
+        p = P.conjugateGradientSolver(tolerance, P, bP, xP, plotfile);
+        b = B.conjugateGradientSolver(tolerance, B, bB, xB, plotfile);
+        //h = H.conjugateGradientSolver(tolerance, H, bH, xH, plotfile);
+    }
+    
 
     cout << "Scale? " << scale << endl;
     cout << "Max entry: " << M.getMax() << endl;
@@ -133,7 +150,7 @@ void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
     infoFile.close();
 }
 
-// TODO: implement half and bfloat16 after fixing issues
+// TODO: implement half after fixing issues
 void trisolveTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
     string identifier="", bool cholesky=false, bool scale=false) {
     if (!(M.isSquare())) {fprintf(stderr, "Please input square matrix for Tri-Solve test."); return;}
@@ -245,9 +262,11 @@ int main(int argc, char* argv[]) {
     string filename;
     bool scale;
     bool plot;
+    bool quire;
+    bool stochastic;
     string identifier = "";
     string matrixname;
-    double tolerance = 1e-5;
+    double tolerance = 1e-7;
 
     cout << "Enter mtx file name (see MatrixMarket):" << endl;
     cin >> filename;
@@ -257,8 +276,14 @@ int main(int argc, char* argv[]) {
     }
     cout << "Enter matrix name:" << endl;
     cin >> matrixname;
+    cout << "Enter identifier:" << endl;
+    cin >> identifier;
     cout << "Scale? (y/n)" << endl;
     scale = yesNo();
+    cout << "Quire? (y/n)" << endl;
+    quire = yesNo();
+    cout << "Stochastic? (y/n)" << endl;
+    stochastic = yesNo();
 
     switch (testID) {
         case 0:
@@ -266,7 +291,7 @@ int main(int argc, char* argv[]) {
             //plot = yesNo();
             // No reason not to plot?
             plot = true;
-            CGTest(systemM, matrixname, identifier, plot, tolerance, scale);
+            CGTest(systemM, matrixname, identifier, quire, plot, tolerance, scale, stochastic);
             break;
         case 1:
             cout << "Cholesky? (y/n)" << endl;

@@ -2,6 +2,7 @@
 #define __MATRIX_HH_
 
 #include <iostream>
+#include <random>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -235,6 +236,52 @@ public:
         for(int i=0;i<a.size();i++) accum+=(a[i]*b[i]);
         return accum;
     }
+
+    // Same as the one for posits but modified for other datatypes
+    T innerProductQuire(vec x, vec y) {
+        if(x.size() != y.size()) { fprintf(stderr, "Invalid dimensions."); return 0; }
+
+        int n = x.size();
+
+        vector<mpf_class> xm(n), ym(n);
+        mpf_class rm(0);
+        T rp;
+
+        upcast(xm, x);
+        upcast(ym, y);
+
+        for (int i=0;i<n;i++) rm += xm[i]*ym[i]; 
+
+        cast(rp, rm);
+        return rp;
+    }
+
+    // Implements stochastic rounding for inner product
+    T innerProductStochastic(const vec &a, const vec &b) const {
+        T accum=0;
+        mpf_class temp;
+        if(a.size()!=b.size()) {fprintf(stderr,"Error: inner product vectors not same length %zu,%zu)",a.size(),b.size()); return 0;}
+        for(int i=0;i<a.size();i++) {
+            cast(temp, a[i] * b[i]);
+            accum += stochasticRound(temp);
+        }
+        return accum;
+    }
+
+    static T stochasticRound(mpf_class value) {
+        mpz_class floorInt(value);
+        mpf_class frac = value - floorInt;
+
+        static thread_local std::mt19937 gen(std::random_device{}());
+        static thread_local std::uniform_real_distribution<double> dist(0.0, 1.0);
+        double r = dist(gen);
+
+        if (r < frac.get_d()) {
+            return static_cast<T>(floorInt.get_d() + 1.0);
+        } else {
+            return static_cast<T>(floorInt.get_d());
+        }
+    }
     
     friend vec matVec (const Matrix &A,const vec &v) {
         vec out(v.size()); //vec out;
@@ -243,6 +290,36 @@ public:
             out[i] = 0;
             for(int j=0;j<A.nCols();j++){
                 out[i]+=A.m[i][j]*v[j]; //changed out[j] to out[i]
+            }
+        }
+        return out;
+    }
+
+    // Same as the one for posits, but works for other datatypes
+    // Note that this one uses a return parameter instead of returning the answer
+    friend void matVecQuire(vec &out, Matrix A, vec x) {
+        if(A.nCols() != x.size() || out.size() != A.nRows()) { fprintf(stderr, "Invalid dimensions."); return; }
+
+        Matrix<mpf_class> AM(A.nRows(), A.nCols());
+        vector<mpf_class> xm(x.size()), bm(A.nRows());
+
+        for (int i=0;i<A.nRows();i++) upcast(AM.m[i], A.m[i]);
+
+        upcast(xm, x);
+
+        bm = matVec(AM, xm);
+        downcast(out, bm);
+    }
+
+    friend vec matVecStochastic (const Matrix &A,const vec &v) {
+        vec out(v.size()); //vec out;
+        if(A.nCols()!=v.size()){fprintf(stderr,"Error MatVec is mismatched A[%u,%u] v[%zu]\n",A.nRows(),A.nCols(),v.size()); return out;}
+        mpf_class temp;
+        for(int i=0;i<A.nRows();i++){
+            out[i] = 0;
+            for(int j=0;j<A.nCols();j++){
+                cast(temp, A.m[i][j] * v[j]);
+                out[i] += stochasticRound(temp);
             }
         }
         return out;
@@ -257,6 +334,10 @@ public:
     
     T vectorNorm(const vec & V) const {
         return sqrt( innerProduct(V,V) ); 
+    }
+
+    T vectorNormQuire(const vec & V) const {
+        return sqrt(innerProductQuire(V,V));
     }
 
     T vectorNormOne(const vec &v) const {
@@ -1333,7 +1414,7 @@ public:
     
     //returns iterations till convergence.
     int conjugateGradientSolver(double tolerance, const Matrix &A, vec B ,vec &X, string plotfile="", \
-        string trafficfile="", bool clean=0) 
+        string trafficfile="", bool clean=false) 
     {
         int n = A.nRows();
         
@@ -1382,6 +1463,106 @@ public:
         return k;
     }
 
+    // Same as the one for posits, but modified to work for other types
+    int conjugateGradientSolverQuire(double tolerance, const Matrix &A, vec B, vec &X,
+        string plotfile="", string trafficplot="", bool clean=false) {
+    
+        int n = A.nRows();
+
+        int k = 0;
+        for(int i=0;i<n;i++) X[i]=0; 
+
+        bool plotResidual = !(plotfile.empty());
+        bool plotTraffic  = !(trafficplot.empty());
+
+        ofstream file, tplot;
+        if (plotResidual) file.open(plotfile, ofstream::app);
+        if (plotTraffic)  tplot.open(trafficplot, ofstream::trunc);
+
+        vec R = B;
+        vec P = R;
+        T r = sqrt( innerProductQuire(R, R) );
+        //vector<T> residual(n);
+    
+        if (plotResidual) file << r;
+
+        string delimiter = "";
+        while ( r > tolerance && k < 12000 )
+        {
+            if (plotTraffic) Posit32::clearCounter();
+            if (k % 50 == 0 && clean) ConjugateGradientStepQuire(A, P, R, X, B, 1); 
+            else                      ConjugateGradientStepQuire(A, P, R, X, B, 0); 
+            if (plotTraffic) tplot << delimiter << Posit32::distillAdvantage();
+
+            r = sqrt( innerProductQuire(R, R) );
+
+            //residual = A.vectorCombination(1.0, B, -1.0, matVec(A, X));
+            //r = A.vectorNorm(residual);
+            cout << k << ": " << r << endl;
+            if (plotResidual) file << "," << r;
+
+            delimiter=",";
+            k++;
+        }
+        file << endl;
+        tplot << endl;
+        file.close();
+        tplot.close();
+
+        return k;
+    }
+
+    // Uses stochastic rounding instead
+    int conjugateGradientSolverStochastic(double tolerance, const Matrix &A, vec B ,vec &X, string plotfile="", \
+        string trafficfile="", bool clean=false) 
+    {
+        int n = A.nRows();
+        
+		int k = 0;
+        for(int i=0;i<n;i++) X[i]=0; //zero out the vector
+
+        vec R = B;
+        vec P = R;
+        
+        ofstream plot;
+        if (!plotfile.empty()) plot.open(plotfile, ofstream::app);
+
+        ofstream traffic;
+        if (!trafficfile.empty()) traffic.open(trafficfile, ofstream::trunc);
+
+        T residual = sqrt(innerProductStochastic(R, R));
+        
+        if (!trafficfile.empty()) Posit32::clearCounter();
+        if (!plotfile.empty())    plot << residual;
+        
+        string delimiter="";
+        T sum=0;
+        T bNorm = vectorNorm(B);
+        while ( residual > tolerance && k < 10000)
+        {
+            if (!trafficfile.empty()) Posit32::clearCounter();
+            cout << k << " " << residual/bNorm << endl;
+            
+            if (k % 50 == 0 && clean) A.ConjugateGradientStepStochastic(A, P, R, X, B, 1); 
+            else                      A.ConjugateGradientStepStochastic(A, P, R, X, B, 0); 
+
+            if (!trafficfile.empty()) traffic << delimiter << Posit32::distillAdvantage(); 
+            
+            residual = sqrt(innerProductStochastic(R, R));
+            if (!plotfile.empty()) plot << "," << residual;
+        
+            k++;
+            delimiter=",";
+        }
+
+        if (!trafficfile.empty()) traffic << endl;
+        if (!plotfile.empty())    plot    << endl;
+        plot.close();
+        traffic.close();
+        
+        return k;
+    }
+
     bool ConjugateGradientStep(const Matrix &A, vec &P, vec &R, vec &X, const vec &B, bool clean=0) const {
         vec Rold = R;
                                        
@@ -1399,7 +1580,52 @@ public:
         P = vectorCombination( 1.0, R, beta, P );
 
         return true;
-    } 
+    }
+
+    // Same as the one for posits, but works for other datatypes
+    bool ConjugateGradientStepQuire(const Matrix &A, vec &P, vec &R, vec &X, vec&B, bool clean=false) {
+        int n = X.size();
+
+        vec Rold = R;                                         
+        vec AP(n,n);
+        matVecQuire(AP, A, P);
+
+        T alpha = innerProductQuire(R, R) / innerProductQuire( P, AP );
+        X = A.vectorCombination( 1.0, X, alpha, P );            
+        
+        if (clean) {
+            vec currentOutput(n,n);
+            matVecQuire(currentOutput, A, X);
+            R = A.vectorCombination( 1.0, B, -1.0, currentOutput ); 
+        }
+        else {
+            R = A.vectorCombination( 1.0, R, -alpha, AP );
+        }
+
+        T beta = innerProductQuire(R, R) / innerProductQuire( Rold, Rold );
+        P = A.vectorCombination( 1.0, R, beta, P );
+
+        return true;
+    }
+
+    bool ConjugateGradientStepStochastic(const Matrix &A, vec &P, vec &R, vec &X, const vec &B, bool clean=0) const {
+        vec Rold = R;
+                                       
+        vec AP = matVecStochastic( A, P );
+        
+        T alpha = innerProductStochastic(R, R) / innerProductStochastic( P, AP );
+
+        X = vectorCombination( 1.0, X, alpha, P );  
+        
+        if (clean) R = vectorCombination( 1.0, B, -1.0,   matVecStochastic(A, X));
+        else       R = vectorCombination( 1.0, R, -alpha, AP          );  
+
+        T beta = innerProductStochastic(R, R) / innerProductStochastic( Rold, Rold ); 
+
+        P = vectorCombination( 1.0, R, beta, P );
+
+        return true;
+    }
     
     //T det(Matrix<T> &A){
     //    // do right diagonals - left diagonals with wrap-around (modulo)
