@@ -263,11 +263,12 @@ public:
         if(a.size()!=b.size()) {fprintf(stderr,"Error: inner product vectors not same length %zu,%zu)",a.size(),b.size()); return 0;}
         for(int i=0;i<a.size();i++) {
             cast(temp, a[i] * b[i]);
-            accum += stochasticRound(temp);
+            accum += stochasticRoundmpf(temp);
         }
         return accum;
     }
 
+    // Doesn't work, use stochasticRoundmpf instead
     static T stochasticRound(mpf_class value) {
         mpz_class floorInt(value);
         mpf_class frac = value - floorInt;
@@ -281,6 +282,71 @@ public:
         } else {
             return static_cast<T>(floorInt.get_d());
         }
+    }
+
+    // Doesn't work, use stochasticRoundmpf instead
+    static T stochasticRoundIEEE(mpf_class value) {
+        long double valueD = value.get_d();
+        T lower = static_cast<T>(valueD);
+        T upper = nextafter(lower, numeric_limits<T>::infinity());
+
+        long double dLower = fabsl(valueD - (long double) lower);
+        long double dUpper = fabsl((long double) upper - valueD);
+        long double total = dLower + dUpper;
+        long double pUp = (total == 0.0L) ? 0.5L : dLower / total;
+
+        static thread_local std::mt19937 gen(12345);
+        static thread_local std::uniform_real_distribution<double> dist(0.0, 1.0);
+        return (dist(gen) < (double)pUp) ? upper : lower;
+    }
+
+    // TODO: might be better to remove static, also for round up and down functions
+    // TODO: might better to put this and other rounding functions in helpers.cc
+    static T stochasticRoundmpf(mpf_class value) {
+        T lower = roundDown(value);
+        T upper = roundUp(value);
+
+        if (lower == upper) return lower; // value is exactly representable
+
+        mpf_class lower_mpf;
+        cast(lower_mpf, lower);
+        mpf_class upper_mpf;
+        cast(upper_mpf, upper);
+
+        mpf_class frac = (value - lower_mpf) / (upper_mpf - lower_mpf);
+        double p_up = frac.get_d();
+
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        std::uniform_real_distribution<double> dis(0.0, 1.0);
+
+        return (dis(gen) < p_up) ? upper : lower;
+    }
+
+    static T roundUp(mpf_class value) {
+        T rounded;
+        cast(rounded, value);
+        mpf_class mpf_nearest;
+        cast(mpf_nearest, rounded);
+
+        if (mpf_nearest < value) {
+            rounded = nextafter(rounded, numeric_limits<T>::infinity());
+        }
+
+        return rounded;
+    }
+
+    static T roundDown(mpf_class value) {
+        T rounded;
+        cast(rounded, value);
+        mpf_class mpf_nearest;
+        cast(mpf_nearest, rounded);
+
+        if (mpf_nearest > value) {
+            rounded = nextafter(rounded, -numeric_limits<T>::infinity());
+        }
+
+        return rounded;
     }
     
     friend vec matVec (const Matrix &A,const vec &v) {
@@ -319,7 +385,7 @@ public:
             out[i] = 0;
             for(int j=0;j<A.nCols();j++){
                 cast(temp, A.m[i][j] * v[j]);
-                out[i] += stochasticRound(temp);
+                out[i] += stochasticRoundmpf(temp);
             }
         }
         return out;

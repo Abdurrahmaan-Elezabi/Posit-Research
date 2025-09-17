@@ -38,33 +38,33 @@ void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
 
     Matrix<double    > D;
     Matrix<float     > F;
-    Matrix<Posit32gmp> P;
+    //Matrix<Posit32gmp> P;
     //Matrix<half      > H;
-    Matrix<bfloat16  > B;
+    //Matrix<bfloat16  > B;
 
     D.set(M);
     F.set(M);
-    P.set(M);
+    //P.set(M);
     //H.set(M);
-    B.set(M);
+    //B.set(M);
 
     vector<double    > xD(n);
     vector<float     > xF(n);
-    vector<Posit32gmp> xP(n);
+    //vector<Posit32gmp> xP(n);
     //vector<half      > xH(n);
-    vector<bfloat16  > xB(n);
+    //vector<bfloat16  > xB(n);
 
     vector<double    > bD(n);
     vector<float     > bF(n);
-    vector<Posit32gmp> bP(n);
+    //vector<Posit32gmp> bP(n);
     //vector<half      > bH(n);
-    vector<bfloat16  > bB(n);
+    //vector<bfloat16  > bB(n);
 
     downcast(bD, bM);
     downcast(bF, bM);
-    downcast(bP, bM);
+    //downcast(bP, bM);
     //downcast(bH, bM);
-    downcast(bB, bM);
+    //downcast(bB, bM);
 
     double tolerance = M.vectorNorm(bM).get_d()*relativeTolerance;
     cout << "Aiming for relative error of " << relativeTolerance << endl;
@@ -76,20 +76,20 @@ void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
     if (quire) {
         f = F.conjugateGradientSolverQuire(tolerance, F, bF, xF, plotfile);
         d = D.conjugateGradientSolverQuire(tolerance, D, bD, xD, plotfile);
-        p = conjugateGradientSolverQ(tolerance, P, bP, xP, plotfile, "", false);
-        b = B.conjugateGradientSolverQuire(tolerance, B, bB, xB, plotfile);
+        //p = conjugateGradientSolverQ(tolerance, P, bP, xP, plotfile, "", false);
+        //b = B.conjugateGradientSolverQuire(tolerance, B, bB, xB, plotfile);
         //h = H.conjugateGradientSolverQuire(tolerance, H, bH, xH, plotfile);
     } else if (stochastic) {
         f = F.conjugateGradientSolverStochastic(tolerance, F, bF, xF, plotfile);
         d = D.conjugateGradientSolverStochastic(tolerance, D, bD, xD, plotfile);
-        p = P.conjugateGradientSolverStochastic(tolerance, P, bP, xP, plotfile);
-        b = B.conjugateGradientSolverStochastic(tolerance, B, bB, xB, plotfile);
+        //p = P.conjugateGradientSolverStochastic(tolerance, P, bP, xP, plotfile);
+        //b = B.conjugateGradientSolverStochastic(tolerance, B, bB, xB, plotfile);
         //h = H.conjugateGradientSolverStochastic(tolerance, H, bH, xH, plotfile);
     } else {
         f = F.conjugateGradientSolver(tolerance, F, bF, xF, plotfile);
         d = D.conjugateGradientSolver(tolerance, D, bD, xD, plotfile);
-        p = P.conjugateGradientSolver(tolerance, P, bP, xP, plotfile);
-        b = B.conjugateGradientSolver(tolerance, B, bB, xB, plotfile);
+        //p = P.conjugateGradientSolver(tolerance, P, bP, xP, plotfile);
+        //b = B.conjugateGradientSolver(tolerance, B, bB, xB, plotfile);
         //h = H.conjugateGradientSolver(tolerance, H, bH, xH, plotfile);
     }
     
@@ -102,9 +102,9 @@ void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
     cout << "Range: " << M.getMax() - M.getMin() << endl;
     cout << "double iterations = "   << d << endl;
     cout << "float iterations = "    << f << endl;
-    cout << "posit iterations = "    << p << endl;
+    //cout << "posit iterations = "    << p << endl;
     //cout << "half iterations = "     << h << endl;
-    cout << "bfloat16 iterations = " << b << endl;
+    //cout << "bfloat16 iterations = " << b << endl;
 
     infoFile.open(infoFilename, ofstream::app);
     infoFile << matrixname << endl;
@@ -113,39 +113,39 @@ void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
     infoFile << "Max/min entry: " << M.getMax() << " : " << M.getMin() << "Range: " << M.getMax() - M.getMin() << endl;
     infoFile << "double iterations = "   << d << endl;
     infoFile << "float iterations = "    << f << endl;
-    infoFile << "posit iterations = "    << p << endl;
+    //infoFile << "posit iterations = "    << p << endl;
     //infoFile << "half iterations = "     << h << endl;
-    infoFile << "bfloat16 iterations = " << b << endl;
+    //infoFile << "bfloat16 iterations = " << b << endl;
     infoFile.close();
 
     vector<mpf_class> bmD(n), bmF(n), bmP(n), bmH(n), bmB(n);
 
     upcast(bmD,matVec(D, xD)); 
     upcast(bmF,matVec(F, xF));
-    upcast(bmP,matVec(P, xP));
+    //upcast(bmP,matVec(P, xP));
     //upcast(bmH,matVec(H, xH));
-    upcast(bmB,matVec(B, xB));
+    //upcast(bmB,matVec(B, xB));
 
     mpf_class rD = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmD));
     mpf_class rF = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmF));
-    mpf_class rP = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmP));
+    //mpf_class rP = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmP));
     //mpf_class rH = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmH));
-    mpf_class rB = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmB));
+    //mpf_class rB = M.vectorNorm(M.vectorCombination(1.0, bM, -1.0, bmB));
 
     puts("\nFinal Residuals:");
     cout << '\t' << "double relative residual = "   << rD/M.vectorNorm(bM) << endl;
     cout << '\t' << "float relative residual = "    << rF/M.vectorNorm(bM) << endl;
-    cout << '\t' << "posit relative residual = "    << rP/M.vectorNorm(bM) << endl;
+    //cout << '\t' << "posit relative residual = "    << rP/M.vectorNorm(bM) << endl;
     //cout << '\t' << "half relative residual = "     << rH/M.vectorNorm(bM) << endl;
-    cout << '\t' << "bfloat16 relative residual = " << rB/M.vectorNorm(bM) << endl;
+    //cout << '\t' << "bfloat16 relative residual = " << rB/M.vectorNorm(bM) << endl;
 
     infoFile.open(infoFilename, ofstream::app);
     infoFile << endl;
     infoFile << '\t' << "double relative residual = "   << rD/M.vectorNorm(bM) << endl;
     infoFile << '\t' << "float relative residual = "    << rF/M.vectorNorm(bM) << endl;
-    infoFile << '\t' << "posit relative residual = "    << rP/M.vectorNorm(bM) << endl;
+    //infoFile << '\t' << "posit relative residual = "    << rP/M.vectorNorm(bM) << endl;
     //infoFile << '\t' << "half relative residual = "     << rH/M.vectorNorm(bM) << endl;
-    infoFile << '\t' << "bfloat16 relative residual = " << rB/M.vectorNorm(bM) << endl;
+    //infoFile << '\t' << "bfloat16 relative residual = " << rB/M.vectorNorm(bM) << endl;
     infoFile << endl;
     infoFile.close();
 }
