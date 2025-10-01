@@ -15,7 +15,7 @@ Abbreviates Gustaffson's idea of Quire/Just does the stuff we care about (overri
 basic linalg operations with deferred rounding). 
 */
 template<class T>
-T innerProductQ(vector<T> x, vector<T> y) {
+T innerProductQOld(vector<T> x, vector<T> y) {
     if(x.size() != y.size()) { fprintf(stderr, "Invalid dimensions."); return 0; }
 
     int n = x.size();
@@ -33,6 +33,25 @@ T innerProductQ(vector<T> x, vector<T> y) {
     return rp;
 }
 
+template<class T>
+T innerProductQ(vector<T> x, vector<T> y) {
+        if(x.size() != y.size()) { fprintf(stderr, "Invalid dimensions."); return 0; }
+
+        int n = x.size();
+
+        mpf_class xtemp, ytemp;
+        mpf_class rm(0);
+        T rp;
+
+        for (int i=0;i<n;i++) {
+            cast(xtemp, x[i]);
+            cast(ytemp, y[i]);
+            rm += xtemp*ytemp; 
+        }
+        cast(rp, rm);
+        return rp;
+    }
+
 template <class T> 
 void matVecQ(vector<T> &out, Matrix<T> A, vector<T> x) {
     if(A.nCols() != x.size() || out.size() != A.nRows()) { fprintf(stderr, "Invalid dimensions."); return; }
@@ -46,6 +65,23 @@ void matVecQ(vector<T> &out, Matrix<T> A, vector<T> x) {
 
     bm = matVec(AM, xm);
     downcast(out, bm);
+}
+
+template <class T>
+void matVecQuire(vector<T> &out, Matrix<T> A, vector<T> x) {
+    if(A.nCols() != x.size() || out.size() != A.nRows()) { fprintf(stderr, "Invalid dimensions."); return; }
+
+    mpf_class sum;
+    mpf_class xtemp, ytemp;
+    for (int i = 0; i < A.nRows(); i++) {
+        sum = 0;
+        for (int j = 0; j < A.nCols(); j++) {
+            cast(xtemp, A.m[i][j]);
+            cast(ytemp, x[j]);
+            sum += xtemp*ytemp;
+        }
+        cast(out[i], sum);
+    }
 }
 
 template <class T>

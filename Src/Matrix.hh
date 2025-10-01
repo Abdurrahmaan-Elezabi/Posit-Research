@@ -237,8 +237,30 @@ public:
         return accum;
     }
 
+    // TODO: I added a lot of functions related to Quire and Stochastic rounding
+    // that are very repetetive. It is probably better to make templated versions
+    // or add function parameters in conjugateGradientSolver to specfy which version
+    // to use.
     // Same as the one for posits but modified for other datatypes
     T innerProductQuire(vec x, vec y) {
+        if(x.size() != y.size()) { fprintf(stderr, "Invalid dimensions."); return 0; }
+
+        int n = x.size();
+
+        mpf_class xtemp, ytemp;
+        mpf_class rm(0);
+        T rp;
+
+        for (int i=0;i<n;i++) {
+            cast(xtemp, x[i]);
+            cast(ytemp, y[i]);
+            rm += xtemp*ytemp; 
+        }
+        cast(rp, rm);
+        return rp;
+    }
+
+    T innerProductQuireOld(vec x, vec y) {
         if(x.size() != y.size()) { fprintf(stderr, "Invalid dimensions."); return 0; }
 
         int n = x.size();
@@ -363,7 +385,7 @@ public:
 
     // Same as the one for posits, but works for other datatypes
     // Note that this one uses a return parameter instead of returning the answer
-    friend void matVecQuire(vec &out, Matrix A, vec x) {
+    friend void matVecQuireOld(vec &out, Matrix A, vec x) {
         if(A.nCols() != x.size() || out.size() != A.nRows()) { fprintf(stderr, "Invalid dimensions."); return; }
 
         Matrix<mpf_class> AM(A.nRows(), A.nCols());
@@ -375,6 +397,22 @@ public:
 
         bm = matVec(AM, xm);
         downcast(out, bm);
+    }
+
+    friend void matVecQuire(vec &out, Matrix A, vec x) {
+        if(A.nCols() != x.size() || out.size() != A.nRows()) { fprintf(stderr, "Invalid dimensions."); return; }
+
+        mpf_class sum;
+        mpf_class xtemp, ytemp;
+        for (int i = 0; i < A.nRows(); i++) {
+            sum = 0;
+            for (int j = 0; j < A.nCols(); j++) {
+                cast(xtemp, A.m[i][j]);
+                cast(ytemp, x[j]);
+                sum += xtemp*ytemp;
+            }
+            cast(out[i], sum);
+        }
     }
 
     friend vec matVecStochastic (const Matrix &A,const vec &v) {
