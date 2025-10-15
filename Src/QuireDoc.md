@@ -14,5 +14,6 @@ Loop through the elements of the two vectors and do the following:
 Downcast sum back to the desired precision and return the result
 ```
 Our matrix-vector multiplication algorithm works similarly.
+For more details about how these two functions work, check the comments in Matrix.hh for innerProductQuire and matVecQuire.
 ## Bit width
 The standard bit width for the quire is 16 * the current data type's bit width. For example, a float of size 32 bits would use a quire of size 512 bits. However, the bit width can be adjusted or optimized as needed.

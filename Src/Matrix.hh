@@ -237,25 +237,37 @@ public:
         return accum;
     }
 
+    // Same as the one for posits but modified for other datatypes
     // TODO: I added a lot of functions related to Quire and Stochastic rounding
     // that are very repetetive. It is probably better to make templated versions
     // or add function parameters in conjugateGradientSolver to specfy which version
     // to use.
-    // Same as the one for posits but modified for other datatypes
     T innerProductQuire(vec x, vec y) {
+        // First, check that the vectors have equal size
         if(x.size() != y.size()) { fprintf(stderr, "Invalid dimensions."); return 0; }
 
         int n = x.size();
 
+        // xtemp and ytemp are high precision variables used to store components of x and y in higher precision,
+        // whereas rm is a high precision variable that contains the sum.
+        // rm is our substitute for a high-precision fixed-point accumulator.
+        // rp is our result after downcasting.
         mpf_class xtemp, ytemp;
         mpf_class rm(0);
         T rp;
 
         for (int i=0;i<n;i++) {
+            // For each index, we first copy x_i and y_i to xtemp and ytemp,
+            // which have more precision
             cast(xtemp, x[i]);
             cast(ytemp, y[i]);
+            
+            // Now, we multiply xtemp and ytemp and add them to the sum.
+            // Notice that no rounding has happened yet.
             rm += xtemp*ytemp; 
         }
+        // In the end, we copy the result to our output variable rp, which has our desired precision.
+        // Since rp has lower precision, it automatically rounds the result if it can't represent it exactly.
         cast(rp, rm);
         return rp;
     }
@@ -400,17 +412,30 @@ public:
     }
 
     friend void matVecQuire(vec &out, Matrix A, vec x) {
+        // First, we check that the dimensions are correct.
         if(A.nCols() != x.size() || out.size() != A.nRows()) { fprintf(stderr, "Invalid dimensions."); return; }
 
+        // Similar to innerProduceQuire, sum is our substitue for an accumulator
+        // and xtemp and ytemp hold the components in higher precision
         mpf_class sum;
         mpf_class xtemp, ytemp;
+
+        // We calculate the result manually by looping through every row and column in A
         for (int i = 0; i < A.nRows(); i++) {
+            // Note that this sum holds the value of the current inner product.
             sum = 0;
             for (int j = 0; j < A.nCols(); j++) {
+                // We first copy A_i,j and x_j to variables of higher precision
                 cast(xtemp, A.m[i][j]);
                 cast(ytemp, x[j]);
+
+                // Then, we multiply them as usual and add them to the sum.
+                // Again, note that there is no rounding in the multiplication or addition
                 sum += xtemp*ytemp;
             }
+            // After calculating each component of the output vector, we copy it to the
+            // output parameter, which has the desired precision
+            // Since it has lower precision, it automatically rounds if it can't represent the result exactly
             cast(out[i], sum);
         }
     }
@@ -1542,7 +1567,7 @@ public:
         string delimiter="";
         T sum=0;
         T bNorm = vectorNorm(B);
-        while ( residual > tolerance && k < 5000)
+        while ( residual > tolerance && k < 10000)
         {
             if (!trafficfile.empty()) Posit32::clearCounter();
             cout << k << " " << residual/bNorm << endl;
@@ -1591,7 +1616,7 @@ public:
         if (plotResidual) file << r;
 
         string delimiter = "";
-        while ( r > tolerance && k < 12000 )
+        while ( r > tolerance && k < 10000 )
         {
             if (plotTraffic) Posit32::clearCounter();
             if (k % 50 == 0 && clean) ConjugateGradientStepQuire(A, P, R, X, B, 1); 
