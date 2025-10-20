@@ -135,7 +135,7 @@ int conjugateGradientSolverQ(double tolerance, Matrix<T> &A, vector<T> \
     if (plotResidual) file << r;
 
     string delimiter = "";
-    while ( r > tolerance && k < 12000 )
+    while ( r > tolerance && k < 5000 )
     {
         if (plotTraffic) Posit32::clearCounter();
         if (k % 50 == 0 && clean) ConjugateGradientStepQ(A, P, R, X, B, 1); 
