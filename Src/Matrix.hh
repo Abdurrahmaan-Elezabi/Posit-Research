@@ -1567,7 +1567,7 @@ public:
         string delimiter="";
         T sum=0;
         T bNorm = vectorNorm(B);
-        while ( residual > tolerance && k < 5000)
+        while ( residual > tolerance && k < 10000)
         {
             if (!trafficfile.empty()) Posit32::clearCounter();
             cout << k << " " << residual/bNorm << endl;
@@ -1616,7 +1616,7 @@ public:
         if (plotResidual) file << r;
 
         string delimiter = "";
-        while ( r > tolerance && k < 5000 )
+        while ( r > tolerance && k < 10000 )
         {
             if (plotTraffic) Posit32::clearCounter();
             if (k % 50 == 0 && clean) ConjugateGradientStepQuire(A, P, R, X, B, 1); 
@@ -1667,7 +1667,7 @@ public:
         string delimiter="";
         T sum=0;
         T bNorm = vectorNorm(B);
-        while ( residual > tolerance && k < 5000)
+        while ( residual > tolerance && k < 10000)
         {
             if (!trafficfile.empty()) Posit32::clearCounter();
             cout << k << " " << residual/bNorm << endl;
