@@ -310,8 +310,9 @@ int main(int argc, char* argv[]) {
                         CGTest(systemM, matrixname, identifier, quire, plot, tolerance, scale, stochastic);
                     }
                 }
+            } else {
+                CGTest(systemM, matrixname, identifier, quire, plot, tolerance, scale, stochastic);
             }
-            CGTest(systemM, matrixname, identifier, quire, plot, tolerance, scale, stochastic);
             break;
         case 1:
             cout << "Cholesky? (y/n)" << endl;
