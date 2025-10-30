@@ -71,5 +71,5 @@ clean:
 	rm -f *.o
 
 distclean: clean
-	rm -f Test Test2 HuffmanCoding Benchmarks libPosit.a
+	rm -f Test Test2 HuffmanCoding Benchmarks libPosit.a NewBenchmarks
 
