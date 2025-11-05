@@ -1570,7 +1570,8 @@ public:
         while ( residual > tolerance && k < 10000)
         {
             if (!trafficfile.empty()) Posit32::clearCounter();
-            cout << k << " " << residual/bNorm << endl;
+            // Used to be: cout << k << " " << residual/bNorm << endl;
+            cout << k << " " << residual << endl;
             
             if (k % 50 == 0 && clean) A.ConjugateGradientStep(A, P, R, X, B, 1); 
             else                      A.ConjugateGradientStep(A, P, R, X, B, 0); 
