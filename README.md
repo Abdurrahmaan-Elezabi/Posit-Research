@@ -20,3 +20,7 @@ Whether to use rounding deferred summation or not. **Currently, this doesn't wor
 Whether to use stochastic rounding or not. Note that if both Quire and Stochastic are chosen, stochastic will be ignored, and Quire will be used. **Currently, this doesn't work for Trisolve.**
 ### Cholesky? (Trisolve Only)
 Whether to use the Cholesky version or not.
+### Enter tolerance (CG Only)
+This question asks about the tolerance. When the residual at an iteration is less than the tolerance, the method will count it as converged. This question accepts typing values in scientific notation. 1e-7 is a good default value to use.
+### Enter iterations (CG Only)
+This question asks about the maximum iterations for CG. If the number of iterations exceeds this number, the algorithm will stop, even if convergence hasn't been reached yet. 10000 is a good default value to use.

@@ -284,8 +284,6 @@ int main(int argc, char* argv[]) {
         cout << "Enter identifier:" << endl;
         cin >> identifier;
     }
-    cout << "Enter tolerance (accepts scientific notation. 1e-7 is a good default)" << endl;
-    tolerance = getDouble();
     cout << "Scale? (y/n)" << endl;
     scale = yesNo();
     cout << "Quire? (y/n)" << endl;
@@ -299,7 +297,9 @@ int main(int argc, char* argv[]) {
             //plot = yesNo();
             // No reason not to plot?
             plot = true;
-            cout << "Enter iterations (10000 is a good default)" << endl;
+            cout << "Enter tolerance (accepts scientific notation. 1e-7 is a good default):" << endl;
+            tolerance = getDouble();
+            cout << "Enter iterations (10000 is a good default):" << endl;
             iterations = getInteger();
             if (test_all) {
                 identifier = "";
