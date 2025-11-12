@@ -235,6 +235,20 @@ int getInteger() {
     }
 }
 
+double getDouble() {
+    double value;
+    while (true) {
+        if (cin >> value) {
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            return value;
+        } else {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Please enter a double" << endl;
+        }
+    }
+}
+
 bool yesNo() {
     string answer = "";
     cin >> answer;

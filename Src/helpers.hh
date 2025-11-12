@@ -126,6 +126,11 @@ void printVector(vector<E> v) {
 // Any input past the integer is ignored and removed from the buffer.
 int getInteger();
 
+// Gets a double from cin, including scientific notation with e.
+// If the user inputs something invalid, asks again until the user inputs a valid integer.
+// Any input past the number is ignored and removed from the buffer.
+double getDouble();
+
 // Gets either a yes or a no from cin.
 // If the user inputs anything else, asks again
 bool yesNo();

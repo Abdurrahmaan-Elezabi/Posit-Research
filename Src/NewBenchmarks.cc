@@ -283,6 +283,8 @@ int main(int argc, char* argv[]) {
         cout << "Enter identifier:" << endl;
         cin >> identifier;
     }
+    cout << "Enter tolerance (accepts scientific notation. 1e-7 is a good default)"
+    tolerance = getDouble();
     cout << "Scale? (y/n)" << endl;
     scale = yesNo();
     cout << "Quire? (y/n)" << endl;
