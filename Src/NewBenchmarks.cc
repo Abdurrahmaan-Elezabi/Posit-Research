@@ -19,7 +19,7 @@ using half_float::half;
 // TODO: half doesn't work
 void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
     string identifier="", bool quire=false, bool plot=false,
-    double relativeTolerance=1e-5, bool scale=false, bool stochastic=false) {
+    double relativeTolerance=1e-5, bool scale=false, bool stochastic=false, int iterations=10000) {
     if (!(M.isSymmetric())) {fprintf(stderr, "Please input symmetric matrix for CG test."); return;}
 
     string infoFilename = "plots/CG" + identifier;
@@ -75,23 +75,23 @@ void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
     puts("starting CG step");
     
     if (quire) {
-        f = F.conjugateGradientSolverQuire(tolerance, F, bF, xF, plotfile);
-        d = D.conjugateGradientSolverQuire(tolerance, D, bD, xD, plotfile);
-        p = conjugateGradientSolverQ(tolerance, P, bP, xP, plotfile, "", false);
-        b = B.conjugateGradientSolverQuire(tolerance, B, bB, xB, plotfile);
-        //h = H.conjugateGradientSolverQuire(tolerance, H, bH, xH, plotfile);
+        f = F.conjugateGradientSolverQuire(tolerance, F, bF, xF, plotfile, "", false, iterations);
+        d = D.conjugateGradientSolverQuire(tolerance, D, bD, xD, plotfile, "", false, iterations);
+        p = conjugateGradientSolverQ(tolerance, P, bP, xP, plotfile, "", false, iterations);
+        b = B.conjugateGradientSolverQuire(tolerance, B, bB, xB, plotfile, "", false, iterations);
+        //h = H.conjugateGradientSolverQuire(tolerance, H, bH, xH, plotfile, "", false, iterations);
     } else if (stochastic) {
-        f = F.conjugateGradientSolverStochastic(tolerance, F, bF, xF, plotfile);
-        d = D.conjugateGradientSolverStochastic(tolerance, D, bD, xD, plotfile);
-        p = P.conjugateGradientSolver(tolerance, P, bP, xP, plotfile);
-        b = B.conjugateGradientSolver(tolerance, B, bB, xB, plotfile);
-        //h = H.conjugateGradientSolverStochastic(tolerance, H, bH, xH, plotfile);
+        f = F.conjugateGradientSolverStochastic(tolerance, F, bF, xF, plotfile, "", false, iterations);
+        d = D.conjugateGradientSolverStochastic(tolerance, D, bD, xD, plotfile, "", false, iterations);
+        p = P.conjugateGradientSolver(tolerance, P, bP, xP, plotfile, "", false, iterations);
+        b = B.conjugateGradientSolver(tolerance, B, bB, xB, plotfile, "", false, iterations);
+        //h = H.conjugateGradientSolverStochastic(tolerance, H, bH, xH, plotfile, "", false, iterations);
     } else {
-        f = F.conjugateGradientSolver(tolerance, F, bF, xF, plotfile);
-        d = D.conjugateGradientSolver(tolerance, D, bD, xD, plotfile);
-        p = P.conjugateGradientSolver(tolerance, P, bP, xP, plotfile);
-        b = B.conjugateGradientSolver(tolerance, B, bB, xB, plotfile);
-        //h = H.conjugateGradientSolver(tolerance, H, bH, xH, plotfile);
+        f = F.conjugateGradientSolver(tolerance, F, bF, xF, plotfile, "", false, iterations);
+        d = D.conjugateGradientSolver(tolerance, D, bD, xD, plotfile, "", false, iterations);
+        p = P.conjugateGradientSolver(tolerance, P, bP, xP, plotfile, "", false, iterations);
+        b = B.conjugateGradientSolver(tolerance, B, bB, xB, plotfile, "", false, iterations);
+        //h = H.conjugateGradientSolver(tolerance, H, bH, xH, plotfile, "", false, iterations);
     }
     
 
@@ -267,7 +267,8 @@ int main(int argc, char* argv[]) {
     bool stochastic;
     string identifier = "";
     string matrixname;
-    double tolerance = 1e-7;
+    double tolerance;
+    int iterations;
     bool test_all;
     cout << "Test all matrices? (y/n)" << endl;
     test_all = yesNo();
@@ -298,6 +299,8 @@ int main(int argc, char* argv[]) {
             //plot = yesNo();
             // No reason not to plot?
             plot = true;
+            cout << "Enter iterations (10000 is a good default)" << endl;
+            iterations = getInteger();
             if (test_all) {
                 identifier = "";
                 if (scale) identifier += "Scale";
@@ -309,11 +312,11 @@ int main(int argc, char* argv[]) {
                         filename = entry.path().string();
                         matrixname = filename.substr(0, filename.size() - 4);
                         systemM.loadMPF((filename).c_str());
-                        CGTest(systemM, matrixname, identifier, quire, plot, tolerance, scale, stochastic);
+                        CGTest(systemM, matrixname, identifier, quire, plot, tolerance, scale, stochastic, iterations);
                     }
                 }
             } else {
-                CGTest(systemM, matrixname, identifier, quire, plot, tolerance, scale, stochastic);
+                CGTest(systemM, matrixname, identifier, quire, plot, tolerance, scale, stochastic, iterations);
             }
             break;
         case 1:

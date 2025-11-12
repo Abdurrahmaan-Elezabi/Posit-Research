@@ -12,7 +12,7 @@
 // Runs CG on the given matrix and plots residual after each iteration.
 void CGTest(Matrix<mpf_class> M, string matrixname="unknown matrix",
     string identifier="", bool quire=false, bool plot=false,
-    double relativeTolerance=1e-5, bool scale=false, bool stochastic=false);
+    double relativeTolerance=1e-5, bool scale=false, bool stochastic=false, int iterations=10000);
 
 // Runs Trisolve on the given matrix and reports final residual
 void trisolveTest(Matrix<mpf_class> M, string matrixname="unknkown matrix",

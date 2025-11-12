@@ -113,7 +113,7 @@ bool ConjugateGradientStepQ(Matrix<T> &A, vector<T>
 
 template <class T>
 int conjugateGradientSolverQ(double tolerance, Matrix<T> &A, vector<T> \
-    &B ,vector<T> & X, string plotfile, string trafficplot, bool clean) {
+    &B ,vector<T> & X, string plotfile, string trafficplot, bool clean, int iterations=10000) {
     
     int n = A.nRows();
 
@@ -135,7 +135,7 @@ int conjugateGradientSolverQ(double tolerance, Matrix<T> &A, vector<T> \
     if (plotResidual) file << r;
 
     string delimiter = "";
-    while ( r > tolerance && k < 10000 )
+    while ( r > tolerance && k < iterations )
     {
         if (plotTraffic) Posit32::clearCounter();
         if (k % 50 == 0 && clean) ConjugateGradientStepQ(A, P, R, X, B, 1); 

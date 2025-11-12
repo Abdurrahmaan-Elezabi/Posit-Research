@@ -1543,7 +1543,7 @@ public:
     
     //returns iterations till convergence.
     int conjugateGradientSolver(double tolerance, const Matrix &A, vec B ,vec &X, string plotfile="", \
-        string trafficfile="", bool clean=false) 
+        string trafficfile="", bool clean=false, int iterations=10000) 
     {
         int n = A.nRows();
         
@@ -1567,7 +1567,7 @@ public:
         string delimiter="";
         T sum=0;
         T bNorm = vectorNorm(B);
-        while ( residual > tolerance && k < 10000)
+        while ( residual > tolerance && k < iterations)
         {
             if (!trafficfile.empty()) Posit32::clearCounter();
             // Used to be: cout << k << " " << residual/bNorm << endl;
@@ -1595,7 +1595,7 @@ public:
 
     // Same as the one for posits, but modified to work for other types
     int conjugateGradientSolverQuire(double tolerance, const Matrix &A, vec B, vec &X,
-        string plotfile="", string trafficplot="", bool clean=false) {
+        string plotfile="", string trafficplot="", bool clean=false, int iterations=10000) {
     
         int n = A.nRows();
 
@@ -1617,7 +1617,7 @@ public:
         if (plotResidual) file << r;
 
         string delimiter = "";
-        while ( r > tolerance && k < 10000 )
+        while ( r > tolerance && k < iterations )
         {
             if (plotTraffic) Posit32::clearCounter();
             if (k % 50 == 0 && clean) ConjugateGradientStepQuire(A, P, R, X, B, 1); 
@@ -1644,7 +1644,7 @@ public:
 
     // Uses stochastic rounding instead
     int conjugateGradientSolverStochastic(double tolerance, const Matrix &A, vec B ,vec &X, string plotfile="", \
-        string trafficfile="", bool clean=false) 
+        string trafficfile="", bool clean=false, int iterations=10000) 
     {
         int n = A.nRows();
         
@@ -1668,7 +1668,7 @@ public:
         string delimiter="";
         T sum=0;
         T bNorm = vectorNorm(B);
-        while ( residual > tolerance && k < 10000)
+        while ( residual > tolerance && k < iterations)
         {
             if (!trafficfile.empty()) Posit32::clearCounter();
             // Used to be: cout << k << " " << residual/bNorm << endl;
